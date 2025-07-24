@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Home, 
@@ -24,6 +25,8 @@ const PlayPage = () => {
   const [selectedTime, setSelectedTime] = useState("10");
   const [isSearching, setIsSearching] = useState(false);
   const [physicalBoard, setPhysicalBoard] = useState(false);
+  const [showModeDialog, setShowModeDialog] = useState(false);
+  const [pendingGameMode, setPendingGameMode] = useState<string | null>(null);
 
   const timeControls = [
     { value: "1", label: "1 دقيقة", icon: "⚡" },
@@ -51,20 +54,16 @@ const PlayPage = () => {
       icon: Zap,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
-      action: () => findRandomOpponent()
+      action: () => startGameMode("random")
     },
     {
       id: "ai",
       title: "ضد الذكاء الاصطناعي",
-      description: "تحدى الكمبيوتر (قريباً)",
+      description: "تحدى الكمبيوتر",
       icon: Bot,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-      disabled: true,
-      action: () => toast({
-        title: "قريباً",
-        description: "ميزة اللعب ضد الذكاء الاصطناعي قيد التطوير"
-      })
+      action: () => startGameMode("ai")
     }
   ];
 
@@ -118,9 +117,27 @@ const PlayPage = () => {
     });
   };
 
+  const startGameMode = (mode: string) => {
+    setPendingGameMode(mode);
+    setShowModeDialog(true);
+  };
+
+  const confirmGameMode = (usePhysical: boolean) => {
+    setPhysicalBoard(usePhysical);
+    setShowModeDialog(false);
+    
+    if (pendingGameMode === "random") {
+      findRandomOpponent();
+    } else if (pendingGameMode === "ai") {
+      // SOCKET: emit('startAIGame', { physicalMode: usePhysical, timeControl: selectedTime });
+      navigate("/game?mode=ai&physical=" + usePhysical);
+    }
+    setPendingGameMode(null);
+  };
+
   const quickPlay = (timeControl: string) => {
     setSelectedTime(timeControl);
-    findRandomOpponent();
+    startGameMode("random");
   };
 
   return (
@@ -329,6 +346,49 @@ const PlayPage = () => {
             </div>
           </div>
         )}
+        
+        {/* Game Mode Dialog */}
+        <Dialog open={showModeDialog} onOpenChange={setShowModeDialog}>
+          <DialogContent className="max-w-md" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="font-cairo">اختر طريقة اللعب</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-center">
+                هل تريد اللعب عبر الهاتف أم عبر اللوحة المادية؟
+              </p>
+              
+              <div className="grid gap-3">
+                <Button
+                  onClick={() => confirmGameMode(false)}
+                  variant="chess"
+                  className="h-16 flex-col gap-2"
+                >
+                  <span className="text-2xl">📱</span>
+                  <span>الهاتف</span>
+                </Button>
+                
+                <Button
+                  onClick={() => confirmGameMode(true)}
+                  variant="elegant"
+                  className="h-16 flex-col gap-2"
+                >
+                  <span className="text-2xl">♟️</span>
+                  <span>اللوحة المادية</span>
+                </Button>
+              </div>
+              
+              <Button
+                onClick={() => setShowModeDialog(false)}
+                variant="ghost"
+                className="w-full"
+              >
+                إلغاء
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

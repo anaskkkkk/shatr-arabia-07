@@ -11,6 +11,8 @@ import Puzzle from "./pages/Puzzle";
 import Play from "./pages/Play";
 import Friends from "./pages/Friends";
 import Admin from "./pages/Admin";
+import ConnectBoard from "./pages/ConnectBoard";
+import Courses from "./pages/Courses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/play" element={<Play />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/connect-board" element={<ConnectBoard />} />
+          <Route path="/courses" element={<Courses />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
